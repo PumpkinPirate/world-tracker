@@ -1,6 +1,6 @@
 <template>
   <div class="encounter-row">
-    <h3>{{ encounter.rangeStart}}-{{ encounter.rangeEnd}} &mdash; {{ encounter.name }}</h3>
+    <h3>{{ range.start}}-{{ range.end}} &mdash; {{ encounter.name }}</h3>
     <p>
       {{ encounter.description }}
     </p>
@@ -10,8 +10,12 @@
 <script>
 export default {
   name: 'EncounterRow',
-  props: {
-    encounter: Object
+  props: {encounterId: Number, range: Object},
+  
+  computed: {
+      encounter() {
+          return this.$store.state.encounters[this.encounterId]
+      }
   }
 }
 </script>

@@ -1,14 +1,17 @@
 <template>
   <div class="encounter-list">
+      <h2>{{ zone.name }}</h2>
       <EncounterRow
-          v-for="encounter in negativeEncounters"
+          v-for="encounter in encounters.negative"
           :key="encounter.id"
-          :encounter="encounter" />
+          :encounterId="encounter.id"
+          :range="encounter.range" />
       <hr />
       <EncounterRow
-          v-for="encounter in positiveEncounters"
+          v-for="encounter in encounters.positive"
           :key="encounter.id"
-          :encounter="encounter" />
+          :encounterId="encounter.id"
+          :range="encounter.range" />
   </div>
 </template>
 
@@ -23,39 +26,45 @@ function compareValue(a, b) {
 export default {
   name: 'EncounterList',
   components: {EncounterRow},
-  props: {
-    encounters: Array
-  },
-  computed: {
-      positiveEncounters: function() {
-          var encs = this.encounters.filter(enc => enc.value > 0)
-          encs.sort(compareValue)
-          
-          var end = 100
-          for (var i=encs.length-1; i>=0; i--) {
-              var enc = encs[i]
-              enc.rangeEnd = end
-              end -= enc.weight
-              enc.rangeStart = end + 1
-          }
-          
-          return encs
-      },
-      negativeEncounters: function() {
-          var encs = this.encounters.filter(enc => enc.value < 0)
-          encs.sort(compareValue)
-          
-          var start = 1
-          for (var i=0; i<encs.length; i++) {
-              var enc = encs[i]
-              enc.rangeStart = start
-              start += enc.weight
-              enc.rangeEnd = start - 1
-          }
-          
-          return encs
-      }
-  }
+  props: {zoneId: Number},
+  
+    computed: {
+        zone() {
+            return this.$store.state.zones[this.zoneId]
+        },
+        
+        encounters() {
+            var all = this.zone.encounters.map(id => ({
+                weight: this.$store.state.encounters[id].weight,
+                value: this.$store.state.encounters[id].value,
+                id
+            }))
+            all.sort(compareValue)
+            
+            var positive = all.filter(e => e.value > 0)
+            var negative = all.filter(e => e.value < 0)
+            
+            var start = 1
+            for (let i=0; i<negative.length; i++) {
+                let enc = negative[i]
+                enc.range = {}
+                enc.range.start = start
+                start += enc.weight
+                enc.range.end = start - 1
+            }
+            
+            var end = 100
+            for (let i=positive.length-1; i>=0; i--) {
+                let enc = positive[i]
+                enc.range = {}
+                enc.range.end = end
+                end -= enc.weight
+                enc.range.start = end + 1
+            }
+            
+            return {positive, negative}
+        }
+    }
 }
 </script>
 
