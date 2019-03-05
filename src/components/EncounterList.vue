@@ -82,5 +82,8 @@ export default {
 
 
 <style scoped>
-
+  .encounter-list {
+    max-width: 50em;
+    margin: auto;
+  }
 </style>
